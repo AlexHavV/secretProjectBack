@@ -282,3 +282,4 @@ yarn-error.log*
 package-lock.json
 /Stolit.MVC/Uploaded/Category/Images
 /Stolit.MVC/Uploaded/
+/SecretProjectBack/appsettings.json
