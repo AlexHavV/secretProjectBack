@@ -40,7 +40,7 @@ namespace SecretProjectBack.Controllers
         }
 
         [HttpPost]
-        [Route("AddProducts")]
+        [Route("AddProduct")]
         public void AddProducts([FromForm] ProductAddModel product)
         {
             string fileName = "placeholder.png";
