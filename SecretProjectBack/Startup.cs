@@ -13,11 +13,14 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 using SecretProjectBack.Context;
 using SecretProjectBack.Entity.User;
+using SecretProjectBack.Mapper;
 using SecretProjectBack.Services;
 
 
@@ -88,6 +91,11 @@ namespace SecretProjectBack
                 
             });
             services.AddCors();
+
+            services.AddFluentValidation(x =>
+                x.RegisterValidatorsFromAssemblyContaining<Startup>());
+
+            services.AddAutoMapper(typeof(ProductProfile));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -118,7 +126,7 @@ namespace SecretProjectBack
                 {
                     var result = userManager.CreateAsync(new AppUser
                     {
-                        Email = "ghostuagov@gmail.com",
+                        Email = "a@a.a",
                         UserName = "admin",
                         Image = "placeholder.png"
                     },"22").Result;
@@ -127,6 +135,20 @@ namespace SecretProjectBack
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            var dir = "Images";
+            var serverDir = Path.Combine(Directory.GetCurrentDirectory(), dir);
+
+            if (!Directory.Exists(serverDir))
+            {
+                Directory.CreateDirectory(serverDir);
+            }
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(serverDir),
+                RequestPath = "/images"
+            });
 
             app.UseEndpoints(endpoints =>
             {
