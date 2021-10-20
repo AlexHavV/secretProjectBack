@@ -39,6 +39,31 @@ namespace SecretProjectBack.Controllers
             return Ok(model);
         }
 
+        [HttpGet]
+        [Route("SearchProducts")]
+        public IActionResult SearchProducts(int page, string searchParam)
+        {
+            int elemCount = 50;
+            int firstElem = (page) * elemCount;
+            int lastElem = firstElem + elemCount;
+
+            var query = _context.Products.AsQueryable();
+
+            var model = query
+                .OrderBy(x => x.Id)
+                .Where(x => !x.IsDeleted);
+            if (!String.IsNullOrEmpty(searchParam))
+            {
+                model = model.Where(x => x.ProductName.Contains(searchParam));
+            }
+
+            var queryRes = model
+                .Take(lastElem).Skip(firstElem)
+                .Include(x => x.ProductImages.OrderBy(y => y.Priority))
+                .Select(x => _mapper.Map<ProductViewModel>(x)).ToList();
+
+            return Ok(queryRes);
+        }
         [HttpPost]
         [Route("AddProduct")]
         public void AddProducts([FromForm] ProductAddModel product)
