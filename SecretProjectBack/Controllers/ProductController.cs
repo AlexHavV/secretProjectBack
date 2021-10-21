@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.EntityFrameworkCore;
 using SecretProjectBack.Context;
 using SecretProjectBack.Entity.Product;
@@ -40,6 +41,17 @@ namespace SecretProjectBack.Controllers
         }
 
         [HttpGet]
+        [Route("GetProductsCount")]
+        public IActionResult GetProductsCount()
+        {
+            var numberOfProducts = _context.Products.AsQueryable().Count(x => !x.IsDeleted);
+            var numberOfPages = Math.Ceiling((double)numberOfProducts / 50);
+
+
+            return Ok(new { countProducts = numberOfProducts, countPages = numberOfPages } );
+        }
+
+        [HttpGet]
         [Route("SearchProducts")]
         public IActionResult SearchProducts(int page, string searchParam)
         {
@@ -66,41 +78,51 @@ namespace SecretProjectBack.Controllers
         }
         [HttpPost]
         [Route("AddProduct")]
-        public void AddProducts([FromForm] ProductAddModel product)
+        public IActionResult AddProducts([FromForm] ProductAddModel product)
         {
-            string fileName = "placeholder.png";
-
-            if (product.Image != null)
+            try
             {
-                var ext = Path.GetExtension(product.Image.FileName);
-                fileName = Path.GetRandomFileName() + ext;
+                string fileName = "placeholder.png";
 
-                var dir = Path.Combine(Directory.GetCurrentDirectory(), "Images", fileName);
-
-                using (var stream = System.IO.File.Create(dir))
+                if (product.Image != null)
                 {
-                    product.Image.CopyTo(stream);
+                    var ext = Path.GetExtension(product.Image.FileName);
+                    fileName = Path.GetRandomFileName() + ext;
+
+                    var dir = Path.Combine(Directory.GetCurrentDirectory(), "Images", fileName);
+
+                    using (var stream = System.IO.File.Create(dir))
+                    {
+                        product.Image.CopyTo(stream);
+                    }
+
                 }
 
+
+                var entity = _mapper.Map<AppProduct>(product);
+                _context.Products.Add(entity);
+                _context.SaveChanges();
+
+                var productImage = new AppProductImage()
+                {
+                    Name = fileName,
+                    ProductId = entity.Id
+                };
+                _context.ProductImages.Add(productImage);
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
             }
             
-
-            var entity = _mapper.Map<AppProduct>(product);
-            _context.Products.Add(entity);
-            _context.SaveChanges();
-
-            var productImage = new AppProductImage()
-            {
-                Name = fileName,
-                ProductId = entity.Id
-            };
-            _context.ProductImages.Add(productImage);
-            _context.SaveChanges();
         }
 
         [HttpPost]
         [Route("GenRandomProducts")]
-        public void GenRandomProducts(int count)
+        public IActionResult GenRandomProducts(int count)
         {
             var rng = new Random();
             for (int i = 0; i < count; i++)
@@ -112,46 +134,77 @@ namespace SecretProjectBack.Controllers
                     Price = rng.Next(25, 50)
                 });
             }
+
+            return Ok();
         }
 
         [HttpPut]
         [Route("UpdateProductById")]
-        public void UpdateProductById([FromForm] AppProduct product)
+        public IActionResult UpdateProductById([FromForm] AppProduct product)
         {
-            var elemToUpdate = _context.Products
-                .SingleOrDefault<AppProduct>(x => x.Id == product.Id);
-            if (elemToUpdate == null)
+            try
             {
-                return;
-            }
-            elemToUpdate.ProductName = product.ProductName;
-            elemToUpdate.Description = product.Description;
-            elemToUpdate.Price = product.Price;
+                var elemToUpdate = _context.Products
+                    .SingleOrDefault<AppProduct>(x => x.Id == product.Id);
+                if (elemToUpdate == null)
+                {
+                    return BadRequest(new { noProduct = "There is no product with such id!" });
+                }
+                elemToUpdate.ProductName = product.ProductName;
+                elemToUpdate.Description = product.Description;
+                elemToUpdate.Price = product.Price;
 
-            _context.SaveChanges();
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+            
         }
 
         [HttpDelete]
         [Route("TrueDeleteProductById")]
-        public void TrueDeleteProductById([FromForm] int idToDelete)
+        public IActionResult TrueDeleteProductById([FromForm] int idToDelete)
         {
-            var elementToDelete = new AppProduct() { Id = idToDelete };
+            try
+            {
+                var elementToDelete = new AppProduct() { Id = idToDelete };
 
-            _context.Products.Attach(elementToDelete);
-            _context.Products.Remove(elementToDelete);
-            _context.SaveChanges();
+                _context.Products.Attach(elementToDelete);
+                _context.Products.Remove(elementToDelete);
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+           
         }
 
         [HttpDelete]
         [Route("DeleteProductById")]
-        public void DeleteProductById([FromForm] int idToDelete)
+        public IActionResult DeleteProductById([FromForm] int idToDelete)
         {
-            var elementToDelete = new AppProduct() { Id = idToDelete };
-           
-            _context.Products.Attach(elementToDelete);
-            elementToDelete.IsDeleted = true;
+            try
+            {
+                var elementToDelete = new AppProduct() { Id = idToDelete };
 
-            _context.SaveChanges();
+                _context.Products.Attach(elementToDelete);
+                elementToDelete.IsDeleted = true;
+
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+            
         }
     }
 }

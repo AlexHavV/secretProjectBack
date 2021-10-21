@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -34,12 +35,28 @@ namespace SecretProjectBack.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromForm] UserAddModel model)
         {
+            string fileName = "placeholder.png";
+
+            if (model.Image != null)
+            {
+                var ext = Path.GetExtension(model.Image.FileName);
+                fileName = Path.GetRandomFileName() + ext;
+
+                var dir = Path.Combine(Directory.GetCurrentDirectory(), "Images", fileName);
+
+                using (var stream = System.IO.File.Create(dir))
+                {
+                    model.Image.CopyTo(stream);
+                }
+
+            }
             var user = new AppUser
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                Image = model.Image
+                Image = fileName
             };
+
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
