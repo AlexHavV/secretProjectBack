@@ -106,10 +106,36 @@ namespace SecretProjectBack.Controllers
                         await _userManager.ResetPasswordAsync(userToEdit, resetToken, newData.Password);
                 }
 
-                userToEdit.UserName = newData.UserName;
-                userToEdit.Image = newData.Image;
-                userToEdit.Email = newData.Email;
-                userToEdit.PhoneNumber = newData.PhoneNumber;
+                if (newData.UserName != null)
+                {
+                    userToEdit.UserName = newData.UserName;
+                }
+                if (newData.Email != null)
+                {
+                    userToEdit.Email = newData.Email;
+                }
+                if (newData.PhoneNumber != null)
+                {
+                    userToEdit.PhoneNumber = newData.PhoneNumber;
+                }
+                
+                if (newData.Image != null)
+                {
+                    var fileName = "";
+                    var ext = Path.GetExtension(newData.Image.FileName);
+                    fileName = Path.GetRandomFileName() + ext;
+
+                    var dir = Path.Combine(Directory.GetCurrentDirectory(), "Images", fileName);
+
+                    using (var stream = System.IO.File.Create(dir))
+                    {
+                        await newData.Image.CopyToAsync(stream);
+                    }
+
+                    userToEdit.Image = fileName;
+                }
+
+                
 
                 await _userManager.UpdateAsync(userToEdit);
 
