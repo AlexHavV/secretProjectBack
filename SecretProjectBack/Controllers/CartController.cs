@@ -9,6 +9,7 @@ using SecretProjectBack.Context;
 using SecretProjectBack.Entity.Product;
 using SecretProjectBack.Models;
 using Microsoft.EntityFrameworkCore;
+using SecretProjectBack.Entity.Cart;
 
 namespace SecretProjectBack.Controllers
 {
@@ -27,17 +28,39 @@ namespace SecretProjectBack.Controllers
 
         [HttpPost]
         [Route("CartGetProduct")]
-        public IActionResult CartGetProduct([FromForm]CartGetProductsModel model)
+        public IActionResult CartGetProduct([FromBody]CartGetProductsModel model)
         {
             var query = _context.Products.AsQueryable();
 
-            var temp = query
-                .Where(user => model.ArrayId.Contains(user.Id))
+            List<int> listIds = new List<int>();
+            foreach (var product in model.CartItems)
+            {
+                listIds.Add(product.Id);
+            }
+
+
+            var result = query
+                .Where(product => listIds.Contains(product.Id))
                 .Include(x => x.ProductImages.OrderBy(y => y.Priority))
                 .Select(x => _mapper.Map<ProductViewModel>(x)).ToList();
 
 
-            return Ok(temp);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("CartConfirm")]
+        public IActionResult CartConfirm([FromBody]CartConfirmModel model)
+        {
+            foreach (var item in model.CartItems)
+            {
+                var entity = _mapper.Map<AppCart>(item);
+                _context.Cart.Add(entity);
+            }
+            
+            _context.SaveChanges();
+
+            return Ok();
         }
     }
 }

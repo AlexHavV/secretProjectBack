@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SecretProjectBack.Entity.Cart;
 using SecretProjectBack.Entity.Product;
 using SecretProjectBack.Entity.User;
 
@@ -22,6 +23,7 @@ namespace SecretProjectBack.Context
 
         public DbSet<AppProduct> Products { get; set; }
         public DbSet<AppProductImage> ProductImages { get; set; }
+        public DbSet<AppCart> Cart { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
