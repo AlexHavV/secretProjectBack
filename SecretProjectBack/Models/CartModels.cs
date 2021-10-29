@@ -7,7 +7,7 @@ namespace SecretProjectBack.Models
 {
     public class CartGetProductsModel
     {
-        public List<CartItem> CartItems  { get; set; }
+        public int UserId  { get; set; }
     }
 
     public class CartAddModel
@@ -15,16 +15,10 @@ namespace SecretProjectBack.Models
         public int UserId { get; set; }
         public int ProductId { get; set; }
     }
-    public class CartAddItemModel
-    {
-        public int UserId { get; set; }
-        public int ProductId { get; set; }
-        //public int Amount { get; set; }
-    }
 
-    public class CartItem
-    {
-        public int Id { get; set; }
-        public int Amount { get; set; }
-    }
+    //public class CartItem
+    //{
+    //    public int Id { get; set; }
+    //    public int Amount { get; set; }
+    //}
 }

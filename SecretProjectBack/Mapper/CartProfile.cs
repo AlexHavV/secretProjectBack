@@ -12,7 +12,7 @@ namespace SecretProjectBack.Mapper
     {
         public CartProfile()
         {
-            CreateMap<CartAddItemModel, AppCart>();
+            CreateMap<CartAddModel, AppCart>();
         }
     }
 }

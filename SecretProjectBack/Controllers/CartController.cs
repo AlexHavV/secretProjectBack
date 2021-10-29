@@ -31,23 +31,17 @@ namespace SecretProjectBack.Controllers
         [Route("CartGetProduct")]
         public IActionResult CartGetProduct([FromBody]CartGetProductsModel model)
         {
-            var query = _context.Products.AsQueryable();
-
-            List<int> listIds = new List<int>();
-
-            foreach (var product in model.CartItems)
-            {
-                listIds.Add(product.Id);
-            }
+            var query = _context.Cart.AsQueryable();
 
 
-            var result = query
-                .Where(product => listIds.Contains(product.Id))
-                .Include(x => x.ProductImages.OrderBy(y => y.Priority))
-                .Select(x => _mapper.Map<ProductViewModel>(x)).ToList();
+
+            //var result = query
+            //    .Where(x => x.UserId == model.UserId)
+            //    .Include(x => x.ProductImages.OrderBy(y => y.Priority))
+            //    .Select(x => _mapper.Map<ProductViewModel>(x)).ToList();
 
 
-            return Ok(result);
+            return Ok();
         }
 
         [HttpPost]
