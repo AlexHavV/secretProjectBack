@@ -10,15 +10,16 @@ namespace SecretProjectBack.Models
         public List<CartItem> CartItems  { get; set; }
     }
 
-    public class CartConfirmModel
-    {
-        public List<CartConfirmItemModel> CartItems { get; set; }
-    }
-    public class CartConfirmItemModel
+    public class CartAddModel
     {
         public int UserId { get; set; }
         public int ProductId { get; set; }
-        public int Amount { get; set; }
+    }
+    public class CartAddItemModel
+    {
+        public int UserId { get; set; }
+        public int ProductId { get; set; }
+        //public int Amount { get; set; }
     }
 
     public class CartItem

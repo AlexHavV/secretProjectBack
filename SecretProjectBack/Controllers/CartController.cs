@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using AutoMapper;
 using SecretProjectBack.Context;
@@ -33,6 +34,7 @@ namespace SecretProjectBack.Controllers
             var query = _context.Products.AsQueryable();
 
             List<int> listIds = new List<int>();
+
             foreach (var product in model.CartItems)
             {
                 listIds.Add(product.Id);
@@ -49,15 +51,24 @@ namespace SecretProjectBack.Controllers
         }
 
         [HttpPost]
-        [Route("CartConfirm")]
-        public IActionResult CartConfirm([FromBody]CartConfirmModel model)
+        [Route("CartAddProduct")]
+        public IActionResult CartAddProduct([FromBody]CartAddModel model)
         {
-            foreach (var item in model.CartItems)
+            var query = _context.Cart.AsQueryable();
+            var appearedProduct = query
+                .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId);
+
+            if (appearedProduct is null)
             {
-                var entity = _mapper.Map<AppCart>(item);
+                var entity = _mapper.Map<AppCart>(model);
+                entity.Amount = 1M;
                 _context.Cart.Add(entity);
             }
-            
+            else
+            {
+                appearedProduct.Amount++;
+            }
+
             _context.SaveChanges();
 
             return Ok();
