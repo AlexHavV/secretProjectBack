@@ -76,8 +76,8 @@ namespace SecretProjectBack.Controllers
         {
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
 
-            //if (!result.Succeeded)
-            //    return BadRequest(new { invalidId = "Wrong credentials!" });
+            if (!result.Succeeded)
+                return BadRequest(new { invalidId = "Wrong credentials!" });
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
@@ -93,17 +93,17 @@ namespace SecretProjectBack.Controllers
 
         [HttpPost]
         [Route("edit")]
-        public async Task<IActionResult> Edit([FromForm] UserModel newData)
+        public async Task<IActionResult> Edit([FromForm]UserModel newData)
         {
-            var userToEdit = await _userManager.FindByIdAsync(newData.Id.ToString());
+            var userToEdit = await _userManager.FindByIdAsync(Convert.ToInt64(newData.Id).ToString());
 
             if (userToEdit != null)
             {
                 if (newData.Password != null)
                 {
                     var resetToken = await _userManager.GeneratePasswordResetTokenAsync(userToEdit);
-                    var changePassword =
-                        await _userManager.ResetPasswordAsync(userToEdit, resetToken, newData.Password);
+                    //var changePassword =
+                    await _userManager.ResetPasswordAsync(userToEdit, resetToken, newData.Password);
                 }
 
                 if (newData.UserName != null)
