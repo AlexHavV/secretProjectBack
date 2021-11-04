@@ -10,6 +10,11 @@ namespace SecretProjectBack.Models
         public int UserId  { get; set; }
     }
 
+    public class CartViewModel : ProductViewModel
+    {
+        public decimal Amount { get; set; }
+    }
+
     public class CartAddModel
     {
         public int UserId { get; set; }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using SecretProjectBack.Entity.Cart;
+using SecretProjectBack.Entity.Product;
 using SecretProjectBack.Models;
 
 namespace SecretProjectBack.Mapper
@@ -13,6 +14,8 @@ namespace SecretProjectBack.Mapper
         public CartProfile()
         {
             CreateMap<CartAddModel, AppCart>();
+            CreateMap<AppProduct, CartViewModel>()
+                .ForMember(x => x.Images, y => y.MapFrom(src => src.ProductImages));
         }
     }
 }

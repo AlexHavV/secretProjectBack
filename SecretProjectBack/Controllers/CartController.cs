@@ -31,17 +31,35 @@ namespace SecretProjectBack.Controllers
         [Route("CartGetProduct")]
         public IActionResult CartGetProduct([FromBody]CartGetProductsModel model)
         {
-            var query = _context.Cart.AsQueryable();
+            //
+            // Need:
+            // Id
+            // amount
+            // product information
+            // 
+            var queryCart = _context.Cart.AsQueryable()
+                .Join(
+                    _context.Products,
+                    Cart => Cart.ProductId,
+                    Products => Products.Id,
+                    (Cart, Products) => new {Cart, Products})
+                .Where(x => x.Cart.UserId == model.UserId && x.Cart.IsPayed == false);
 
+            var result = queryCart.Select(x => _mapper.Map<CartViewModel>(x.Products)).ToList();
 
+            result.ForEach((item) =>
+            {
+                item.Amount = _context.Cart.AsQueryable().SingleOrDefault(x => x.ProductId == item.Id && x.UserId == model.UserId).Amount;
 
-            //var result = query
-            //    .Where(x => x.UserId == model.UserId)
-            //    .Include(x => x.ProductImages.OrderBy(y => y.Priority))
-            //    .Select(x => _mapper.Map<ProductViewModel>(x)).ToList();
+                var imageQuery = _context.ProductImages.Where(x => x.ProductId == item.Id).ToList();
 
+                foreach (var image in imageQuery)
+                {
+                    item.Images.Add(_mapper.Map<ProductImageModel>(image));
+                }
+            });
 
-            return Ok();
+            return Ok(result);
         }
 
         [HttpPost]
