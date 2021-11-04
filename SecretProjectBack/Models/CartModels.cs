@@ -9,6 +9,10 @@ namespace SecretProjectBack.Models
     {
         public int UserId  { get; set; }
     }
+    public class CartConfirmOrderModel
+    {
+        public int UserId { get; set; }
+    }
 
     public class CartViewModel : ProductViewModel
     {

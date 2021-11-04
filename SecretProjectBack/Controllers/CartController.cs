@@ -88,7 +88,7 @@ namespace SecretProjectBack.Controllers
 
         [HttpPost]
         [Route("CartRemoveProduct")]
-        public IActionResult CartRemoveProduct([FromBody] CartGeneralModel model)
+        public IActionResult CartRemoveProduct([FromBody]CartGeneralModel model)
         {
             var query = _context.Cart.AsQueryable();
 
@@ -100,5 +100,25 @@ namespace SecretProjectBack.Controllers
 
             return Ok();
         }
+
+        [HttpPost]
+        [Route("ConfirmPurchase")]
+        public IActionResult ConfirmPurchase([FromBody]CartConfirmOrderModel model)
+        {
+            var query = _context.Cart.AsQueryable();
+
+            var allUserProducts = query
+                .Where(x => x.UserId == model.UserId && x.IsPayed == false);
+
+            foreach (var item in allUserProducts)
+            {
+                item.IsPayed = true;
+            }
+
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
     }
 }
