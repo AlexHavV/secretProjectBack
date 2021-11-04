@@ -49,7 +49,7 @@ namespace SecretProjectBack.Controllers
 
             result.ForEach((item) =>
             {
-                item.Amount = _context.Cart.AsQueryable().SingleOrDefault(x => x.ProductId == item.Id && x.UserId == model.UserId).Amount;
+                item.Amount = _context.Cart.AsQueryable().SingleOrDefault(x => x.ProductId == item.Id && x.UserId == model.UserId && x.IsPayed == false).Amount;
 
                 var imageQuery = _context.ProductImages.Where(x => x.ProductId == item.Id).ToList();
 
@@ -68,7 +68,7 @@ namespace SecretProjectBack.Controllers
         {
             var query = _context.Cart.AsQueryable();
             var appearedProduct = query
-                .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId);
+                .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId && x.IsPayed == false);
 
             if (appearedProduct is null)
             {
