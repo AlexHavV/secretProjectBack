@@ -64,7 +64,7 @@ namespace SecretProjectBack.Controllers
 
         [HttpPost]
         [Route("CartAddProduct")]
-        public IActionResult CartAddProduct([FromBody]CartAddModel model)
+        public IActionResult CartAddProduct([FromBody] CartGeneralModel model)
         {
             var query = _context.Cart.AsQueryable();
             var appearedProduct = query
@@ -81,6 +81,21 @@ namespace SecretProjectBack.Controllers
                 appearedProduct.Amount++;
             }
 
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("CartRemoveProduct")]
+        public IActionResult CartRemoveProduct([FromBody] CartGeneralModel model)
+        {
+            var query = _context.Cart.AsQueryable();
+
+            var productToRemove = query
+                .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId && x.IsPayed == false);
+
+            _context.Cart.Remove(productToRemove);
             _context.SaveChanges();
 
             return Ok();

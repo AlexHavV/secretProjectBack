@@ -15,7 +15,7 @@ namespace SecretProjectBack.Models
         public decimal Amount { get; set; }
     }
 
-    public class CartAddModel
+    public class CartGeneralModel
     {
         public int UserId { get; set; }
         public int ProductId { get; set; }

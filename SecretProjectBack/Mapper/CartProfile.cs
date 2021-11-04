@@ -13,7 +13,7 @@ namespace SecretProjectBack.Mapper
     {
         public CartProfile()
         {
-            CreateMap<CartAddModel, AppCart>();
+            CreateMap<CartGeneralModel, AppCart>();
             CreateMap<AppProduct, CartViewModel>()
                 .ForMember(x => x.Images, y => y.MapFrom(src => src.ProductImages));
         }
