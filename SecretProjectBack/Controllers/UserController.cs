@@ -74,12 +74,16 @@ namespace SecretProjectBack.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromForm] UserLoginModel model)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
+            var userObject = await _userManager
+                .FindByEmailAsync(model.Email);
+
+            var result = await _signInManager.PasswordSignInAsync(userObject.UserName, model.Password, false, false);
 
             if (!result.Succeeded)
                 return BadRequest(new { invalidId = "Wrong credentials!" });
 
             var user = await _userManager.FindByEmailAsync(model.Email);
+
             if (user != null)
             {
                 return Ok(new

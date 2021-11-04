@@ -28,6 +28,7 @@ namespace SecretProjectBack.Models
 
     public class UserAddModel
     {
+        [Required]
         public string UserName { get; set; }
         public IFormFile Image { get; set; }
         [Required]
