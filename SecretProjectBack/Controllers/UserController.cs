@@ -35,6 +35,13 @@ namespace SecretProjectBack.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromForm] UserAddModel model)
         {
+            var checkEmail = await _userManager.FindByEmailAsync(model.Email);
+
+            if (checkEmail is not null)
+            {
+                return StatusCode(500, "User email is already registered");
+            }
+
             string fileName = "placeholder.png";
 
             if (model.Image != null)
@@ -49,15 +56,6 @@ namespace SecretProjectBack.Controllers
                     model.Image.CopyTo(stream);
                 }
 
-            }
-
-            try
-            {
-                _userManager.FindByEmailAsync(model.Email);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, "User email is already registered");
             }
 
             var user = new AppUser
@@ -110,54 +108,61 @@ namespace SecretProjectBack.Controllers
         public async Task<IActionResult> Edit([FromForm]UserModel newData)
         {
             var userToEdit = await _userManager.FindByIdAsync(Convert.ToInt64(newData.Id).ToString());
-
-            if (userToEdit != null)
+            try
             {
-                if (newData.Password != null)
+                if (userToEdit != null)
                 {
-                    var resetToken = await _userManager.GeneratePasswordResetTokenAsync(userToEdit);
-                    //var changePassword =
-                    await _userManager.ResetPasswordAsync(userToEdit, resetToken, newData.Password);
-                }
-
-                if (newData.UserName != null)
-                {
-                    userToEdit.UserName = newData.UserName;
-                }
-                if (newData.Email != null)
-                {
-                    userToEdit.Email = newData.Email;
-                }
-                if (newData.PhoneNumber != null)
-                {
-                    userToEdit.PhoneNumber = newData.PhoneNumber;
-                }
-                
-                if (newData.Image != null)
-                {
-                    var fileName = "";
-                    var ext = Path.GetExtension(newData.Image.FileName);
-                    fileName = Path.GetRandomFileName() + ext;
-
-                    var dir = Path.Combine(Directory.GetCurrentDirectory(), "Images", fileName);
-
-                    using (var stream = System.IO.File.Create(dir))
+                    if (newData.Password != null)
                     {
-                        await newData.Image.CopyToAsync(stream);
+                        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(userToEdit);
+                        //var changePassword =
+                        await _userManager.ResetPasswordAsync(userToEdit, resetToken, newData.Password);
                     }
 
-                    userToEdit.Image = fileName;
+                    if (newData.UserName != null)
+                    {
+                        userToEdit.UserName = newData.UserName;
+                    }
+                    if (newData.Email != null)
+                    {
+                        userToEdit.Email = newData.Email;
+                    }
+                    if (newData.PhoneNumber != null)
+                    {
+                        userToEdit.PhoneNumber = newData.PhoneNumber;
+                    }
+
+                    if (newData.Image != null)
+                    {
+                        var fileName = "";
+                        var ext = Path.GetExtension(newData.Image.FileName);
+                        fileName = Path.GetRandomFileName() + ext;
+
+                        var dir = Path.Combine(Directory.GetCurrentDirectory(), "Images", fileName);
+
+                        using (var stream = System.IO.File.Create(dir))
+                        {
+                            await newData.Image.CopyToAsync(stream);
+                        }
+
+                        userToEdit.Image = fileName;
+                    }
+
+
+
+                    await _userManager.UpdateAsync(userToEdit);
+
+                    return Ok(new
+                    {
+                        token = _jwtTokenService.CreateToken(userToEdit)
+                    });
                 }
-
-                
-
-                await _userManager.UpdateAsync(userToEdit);
-
-                return Ok(new
-                {
-                    token = _jwtTokenService.CreateToken(userToEdit)
-                });
             }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+            
             return BadRequest(new { invalidId = "Wrong Id!" });
             
 
