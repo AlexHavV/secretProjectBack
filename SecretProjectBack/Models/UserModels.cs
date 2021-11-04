@@ -36,6 +36,8 @@ namespace SecretProjectBack.Models
         public string Password { get; set; }
     }
 
+
+
     public class UserLoginModel
     {
         public string Email { get; set; }

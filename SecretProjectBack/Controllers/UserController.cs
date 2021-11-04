@@ -144,7 +144,7 @@ namespace SecretProjectBack.Controllers
                     token = _jwtTokenService.CreateToken(userToEdit)
                 });
             }
-            return BadRequest(new { invalidid = "Wrong Id!" });
+            return BadRequest(new { invalidId = "Wrong Id!" });
             
 
             

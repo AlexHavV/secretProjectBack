@@ -31,59 +31,72 @@ namespace SecretProjectBack.Controllers
         [Route("CartGetProduct")]
         public IActionResult CartGetProduct([FromBody]CartGetProductsModel model)
         {
-            //
-            // Need:
-            // Id
-            // amount
-            // product information
-            // 
-            var queryCart = _context.Cart.AsQueryable()
-                .Join(
-                    _context.Products,
-                    Cart => Cart.ProductId,
-                    Products => Products.Id,
-                    (Cart, Products) => new {Cart, Products})
-                .Where(x => x.Cart.UserId == model.UserId && x.Cart.IsPayed == false);
-
-            var result = queryCart.Select(x => _mapper.Map<CartViewModel>(x.Products)).ToList();
-
-            result.ForEach((item) =>
+            try
             {
-                item.Amount = _context.Cart.AsQueryable().SingleOrDefault(x => x.ProductId == item.Id && x.UserId == model.UserId && x.IsPayed == false).Amount;
+                var queryCart = _context.Cart.AsQueryable()
+                    .Join(
+                        _context.Products,
+                        Cart => Cart.ProductId,
+                        Products => Products.Id,
+                        (Cart, Products) => new { Cart, Products })
+                    .Where(x => x.Cart.UserId == model.UserId && x.Cart.IsPayed == false);
 
-                var imageQuery = _context.ProductImages.Where(x => x.ProductId == item.Id).ToList();
+                var result = queryCart.Select(x => _mapper.Map<CartViewModel>(x.Products)).ToList();
 
-                foreach (var image in imageQuery)
+                result.ForEach((item) =>
                 {
-                    item.Images.Add(_mapper.Map<ProductImageModel>(image));
-                }
-            });
+                    item.Amount = _context.Cart.AsQueryable().SingleOrDefault(x => x.ProductId == item.Id && x.UserId == model.UserId && x.IsPayed == false).Amount;
 
-            return Ok(result);
+                    var imageQuery = _context.ProductImages.Where(x => x.ProductId == item.Id).ToList();
+
+                    foreach (var image in imageQuery)
+                    {
+                        item.Images.Add(_mapper.Map<ProductImageModel>(image));
+                    }
+                });
+
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+           
+
+            
         }
 
         [HttpPost]
         [Route("CartAddProduct")]
         public IActionResult CartAddProduct([FromBody] CartGeneralModel model)
         {
-            var query = _context.Cart.AsQueryable();
-            var appearedProduct = query
-                .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId && x.IsPayed == false);
-
-            if (appearedProduct is null)
+            try
             {
-                var entity = _mapper.Map<AppCart>(model);
-                entity.Amount = 1M;
-                _context.Cart.Add(entity);
+                var query = _context.Cart.AsQueryable();
+                var appearedProduct = query
+                    .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId && x.IsPayed == false);
+
+                if (appearedProduct is null)
+                {
+                    var entity = _mapper.Map<AppCart>(model);
+                    entity.Amount = 1M;
+                    _context.Cart.Add(entity);
+                }
+                else
+                {
+                    appearedProduct.Amount++;
+                }
+
+                _context.SaveChanges();
+                return Ok();
             }
-            else
+            catch (Exception e)
             {
-                appearedProduct.Amount++;
+                return StatusCode(500, e);
             }
+            
 
-            _context.SaveChanges();
-
-            return Ok();
+            
         }
 
         [HttpPost]
@@ -91,33 +104,50 @@ namespace SecretProjectBack.Controllers
         public IActionResult CartRemoveProduct([FromBody]CartGeneralModel model)
         {
             var query = _context.Cart.AsQueryable();
+            try
+            {
+                var productToRemove = query
+                    .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId && x.IsPayed == false);
+                _context.Cart.Remove(productToRemove);
+                _context.SaveChanges();
 
-            var productToRemove = query
-                .SingleOrDefault(x => x.UserId == model.UserId && x.ProductId == model.ProductId && x.IsPayed == false);
-
-            _context.Cart.Remove(productToRemove);
-            _context.SaveChanges();
-
-            return Ok();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+            
+            
         }
 
         [HttpPost]
         [Route("ConfirmPurchase")]
         public IActionResult ConfirmPurchase([FromBody]CartConfirmOrderModel model)
         {
-            var query = _context.Cart.AsQueryable();
-
-            var allUserProducts = query
-                .Where(x => x.UserId == model.UserId && x.IsPayed == false);
-
-            foreach (var item in allUserProducts)
+            try
             {
-                item.IsPayed = true;
+                var query = _context.Cart.AsQueryable();
+
+                var allUserProducts = query
+                    .Where(x => x.UserId == model.UserId && x.IsPayed == false);
+
+                foreach (var item in allUserProducts)
+                {
+                    item.IsPayed = true;
+                }
+
+                _context.SaveChanges();
+
+                return Ok();
             }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
+            
 
-            _context.SaveChanges();
-
-            return Ok();
+            
         }
 
     }
