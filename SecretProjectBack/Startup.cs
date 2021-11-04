@@ -45,7 +45,7 @@ namespace SecretProjectBack
             services.AddIdentity<AppUser, AppRole>(options =>
                 {
                     options.Password.RequireDigit = false;
-                    options.Password.RequiredLength = 5;
+                    options.Password.RequiredLength = 1;
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireLowercase = false;

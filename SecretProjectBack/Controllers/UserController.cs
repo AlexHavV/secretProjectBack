@@ -50,6 +50,16 @@ namespace SecretProjectBack.Controllers
                 }
 
             }
+
+            try
+            {
+                _userManager.FindByEmailAsync(model.Email);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, "User email is already registered");
+            }
+
             var user = new AppUser
             {
                 UserName = model.UserName,
